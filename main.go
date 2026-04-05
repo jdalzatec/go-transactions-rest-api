@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -13,13 +14,31 @@ type Transaction struct {
 	Amount float64   `json:"amount"`
 }
 
+type TransactionCreatePayload struct {
+	Amount float64 `json:"amount" validate:"required,gt=0"`
+}
+
 type ErrorResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+	Details string `json:"details,omitempty"`
 }
 
-func responseWithError(w http.ResponseWriter, status int) {
-	bytes, err := json.Marshal(ErrorResponse{Code: status, Message: http.StatusText(status)})
+type ErrorOption func(*ErrorResponse)
+
+func withDetails(details string) ErrorOption {
+	return func(er *ErrorResponse) {
+		er.Details = details
+	}
+}
+
+func responseWithError(w http.ResponseWriter, status int, options ...ErrorOption) {
+	errorResponse := ErrorResponse{Code: status, Message: http.StatusText(status)}
+	for _, option := range options {
+		option(&errorResponse)
+	}
+
+	bytes, err := json.Marshal(errorResponse)
 	if err != nil {
 		slog.Error("error serializing", "error", err)
 		http.Error(w, `{"code": 500, "message": "internal server error}`, http.StatusInternalServerError)
@@ -52,7 +71,22 @@ func main() {
 	})
 
 	http.HandleFunc("POST /transactions", func(w http.ResponseWriter, r *http.Request) {
-		data := Transaction{ID: uuid.New(), Amount: 0.0}
+		var payload TransactionCreatePayload
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			slog.Error("error decoding transaction create payload", "error", err)
+			responseWithError(w, http.StatusBadRequest, withDetails("invalid payload"))
+			return
+		}
+		if err := validator.New().Struct(payload); err != nil {
+			responseWithError(
+				w,
+				http.StatusBadRequest,
+				withDetails(err.Error()),
+			)
+			return
+		}
+
+		data := Transaction{ID: uuid.New(), Amount: payload.Amount}
 		respondWithJSON(w, http.StatusCreated, data)
 	})
 
