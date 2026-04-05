@@ -62,12 +62,9 @@ func respondWithJSON(w http.ResponseWriter, status int, data any) {
 }
 
 func main() {
+	transactions := make([]Transaction, 0, 2)
 	http.HandleFunc("GET /transactions", func(w http.ResponseWriter, r *http.Request) {
-		data := []Transaction{
-			{ID: uuid.New(), Amount: 100.0},
-			{ID: uuid.New(), Amount: 200.0},
-		}
-		respondWithJSON(w, http.StatusOK, data)
+		respondWithJSON(w, http.StatusOK, transactions)
 	})
 
 	http.HandleFunc("POST /transactions", func(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +84,7 @@ func main() {
 		}
 
 		data := Transaction{ID: uuid.New(), Amount: payload.Amount}
+		transactions = append(transactions, data)
 		respondWithJSON(w, http.StatusCreated, data)
 	})
 
