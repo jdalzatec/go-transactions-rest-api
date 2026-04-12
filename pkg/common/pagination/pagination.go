@@ -3,8 +3,8 @@ package pagination
 import "github.com/google/uuid"
 
 type Pagination struct {
-	Cursor  uuid.UUID `json:"cursor"`
-	HasMore bool      `json:"has_more"`
+	Cursor  *uuid.UUID `json:"cursor"`
+	HasMore bool       `json:"has_more"`
 }
 
 type Paginated[T any] struct {

@@ -9,15 +9,16 @@ import (
 )
 
 func NewServeMux() *http.ServeMux {
-	transactions := make([]*model.Transaction, 0, 2)
+	transactions := make([]*model.Transaction, 0)
+	transactionService := service.NewTransactionService(transactions)
 	mux := http.NewServeMux()
 	mux.Handle(
 		"GET /",
-		&handler.TransactionListHandler{TransactionService: service.NewTransactionService(transactions)},
+		&handler.TransactionListHandler{TransactionService: transactionService},
 	)
 	mux.Handle(
 		"POST /",
-		&handler.TransactionCreateHandler{TransactionService: service.NewTransactionService(transactions)},
+		&handler.TransactionCreateHandler{TransactionService: transactionService},
 	)
 	return mux
 }

@@ -2,13 +2,14 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jdalzatec/banking/pkg/core/transaction/internal/model"
 )
 
 type TransactionService interface {
-	List(context.Context, uuid.UUID, int) ([]*model.Transaction, error)
+	List(context.Context, *uuid.UUID, int) ([]*model.Transaction, bool, error)
 	Create(context.Context, *model.TransactionCreatePayload) (*model.Transaction, error)
 }
 
@@ -31,19 +32,24 @@ func (t *transactionService) Create(ctx context.Context, payload *model.Transact
 }
 
 // List implements [TransactionService].
-func (t *transactionService) List(ctx context.Context, cursor uuid.UUID, limit int) ([]*model.Transaction, error) {
+func (t *transactionService) List(ctx context.Context, cursor *uuid.UUID, limit int) ([]*model.Transaction, bool, error) {
 	start := 0
-	if cursor == uuid.Nil {
+	if cursor == nil {
 		start = 0
 	} else {
+		found := false
 		for i, transaction := range t.transactions {
-			if transaction.ID == cursor {
+			if transaction.ID == *cursor {
 				start = i + 1
+				found = true
 				break
 			}
+		}
+		if !found {
+			return nil, false, fmt.Errorf("cursor not found")
 		}
 	}
 
 	result := t.transactions[start:min(start+limit, len(t.transactions))]
-	return result, nil
+	return result, len(t.transactions) > start+limit, nil
 }
