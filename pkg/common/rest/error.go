@@ -33,13 +33,20 @@ func Error(ctx context.Context, w http.ResponseWriter, status int, options ...Er
 	if err != nil {
 		slog.ErrorContext(ctx, "error serializing", "error", err)
 		h := w.Header()
+		h.Del("Content-Length")
 		h.Set("Content-Type", "application/json")
 		h.Set("X-Content-Type-Options", "nosniff")
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintln(w, `{"code": 500, "message": "internal server error"}`)
+		_, err := fmt.Fprintln(w, `{"code": 500, "message": "internal server error"}`)
+		if err != nil {
+			slog.ErrorContext(ctx, "error writing response", "error", err)
+		}
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write([]byte(bytes))
+	_, err = w.Write(bytes)
+	if err != nil {
+		slog.ErrorContext(ctx, "error writing response", "error", err)
+	}
 }

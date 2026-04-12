@@ -4,13 +4,13 @@ pre-commit:
     # 1. Format your code
     gofmt:
       glob: "*.go"
-      run: gofmt -s -w {staged_files} && git add {staged_files}
+      run: gofmt -s -w .
 
     # 2. Modern linting (requires golangci-lint)
     golangci-lint:
       tags: backend style
       glob: "*.go"
-      run: golangci-lint run --fix {staged_files}
+      run: golangci-lint run --fix
 
     # 3. Tidy up modules
     go-mod-tidy:

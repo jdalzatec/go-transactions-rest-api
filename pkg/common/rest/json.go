@@ -17,5 +17,8 @@ func JSON(ctx context.Context, w http.ResponseWriter, status int, data any) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write([]byte(bytes))
+	_, err = w.Write(bytes)
+	if err != nil {
+		slog.ErrorContext(ctx, "error writing response", "error", err)
+	}
 }
