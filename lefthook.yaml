@@ -1,0 +1,28 @@
+pre-commit:
+  parallel: true
+  commands:
+    # 1. Format your code
+    gofmt:
+      glob: "*.go"
+      run: gofmt -s -w {staged_files} && git add {staged_files}
+
+    # 2. Modern linting (requires golangci-lint)
+    golangci-lint:
+      tags: backend style
+      glob: "*.go"
+      run: golangci-lint run --fix {staged_files}
+
+    # 3. Tidy up modules
+    go-mod-tidy:
+      run: go mod tidy
+
+pre-push:
+  commands:
+    # Run the full test suite before pushing to remote
+    go-test:
+      tags: backend test
+      run: go test -v ./...
+
+    # Optional: Ensure no large files are being pushed
+    ban-large-files:
+      run: find . -size +5M -not -path "./.git/*" | grep . && exit 1 || exit 0
