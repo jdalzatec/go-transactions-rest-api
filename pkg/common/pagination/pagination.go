@@ -1,9 +1,11 @@
 package pagination
 
-import "github.com/google/uuid"
+import (
+	"github.com/oklog/ulid/v2"
+)
 
 type Pagination struct {
-	Cursor  *uuid.UUID `json:"cursor"`
+	Cursor  *ulid.ULID `json:"cursor"`
 	HasMore bool       `json:"has_more"`
 }
 

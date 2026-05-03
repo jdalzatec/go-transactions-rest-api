@@ -33,3 +33,5 @@ go.work.sum
 
 # air
 tmp/
+
+.DS_Store

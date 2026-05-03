@@ -1,8 +1,8 @@
 package model
 
-import "github.com/google/uuid"
+import "github.com/oklog/ulid/v2"
 
 type Transaction struct {
-	ID     uuid.UUID `json:"id"`
+	ID     ulid.ULID `json:"id"`
 	Amount float64   `json:"amount"`
 }

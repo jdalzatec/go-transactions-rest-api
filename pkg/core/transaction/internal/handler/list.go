@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/jdalzatec/banking/pkg/common/pagination"
 	"github.com/jdalzatec/banking/pkg/common/rest"
 	"github.com/jdalzatec/banking/pkg/core/transaction/internal/model"
 	"github.com/jdalzatec/banking/pkg/core/transaction/internal/service"
+	"github.com/oklog/ulid/v2"
 )
 
 type TransactionListHandler struct {
@@ -17,12 +17,12 @@ type TransactionListHandler struct {
 }
 
 func (h *TransactionListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var cursor *uuid.UUID
+	var cursor *ulid.ULID
 	cursorValue := r.URL.Query().Get("cursor")
 	if cursorValue == "" {
 		cursor = nil
 	} else {
-		parsedCursor, cursorErr := uuid.Parse(cursorValue)
+		parsedCursor, cursorErr := ulid.Parse(cursorValue)
 		if cursorErr != nil {
 			rest.Error(r.Context(), w, http.StatusBadRequest, rest.WithDetails(fmt.Sprintf("invalid cursor: %s", cursorErr.Error())))
 			return
